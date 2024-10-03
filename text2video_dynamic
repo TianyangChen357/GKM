@@ -1,0 +1,43 @@
+import os
+from gtts import gTTS
+import subprocess
+
+# Step 1: Convert text to speech using gTTS
+def text_to_speech(text, output_audio_file="speech.mp3"):
+    tts = gTTS(text)
+    tts.save(output_audio_file)
+    return output_audio_file
+
+# Step 2: Run Wav2Lip to sync lips in the image with audio
+def sync_lips_with_audio(image_path, audio_path, output_video_file="result_voice.mp4"):
+    # Make sure Wav2Lip is set up correctly
+    wav2lip_command = [
+        "python", "Wav2Lip/inference.py",
+        "--checkpoint_path", "Wav2Lip/face_detection/detection/sfd/wav2lip_gan.pth",
+        "--face", image_path,
+        "--audio", audio_path
+    ]
+    subprocess.run(wav2lip_command)
+    
+    # Rename output to desired file name
+    if os.path.exists("results/result_voice.mp4"):
+        os.rename("results/result_voice.mp4", output_video_file)
+
+# Provide the text to be read
+text = """
+Spatial statistics is a branch of statistics that focuses on analyzing data with a spatial component, helping us understand patterns, relationships, and variations across geographic areas. It’s widely used in fields like geography, ecology, and urban planning to make informed decisions by analyzing how location impacts phenomena such as population density, resource distribution, or environmental changes. By leveraging tools like spatial autocorrelation and clustering, spatial statistics uncovers hidden insights that wouldn't be visible in non-spatial data analysis.
+"""
+
+# Step 3: Generate speech from text
+audio_file = text_to_speech(text)
+
+# Step 4: Sync lips in the image with the generated audio
+image_file = "man_image.jpg"  # Replace with the path to your image file
+output_video_file = "output_video_dynamic.mp4"
+sync_lips_with_audio(image_file, audio_file, output_video_file)
+
+# Step 5: Clean up temporary files safely
+if os.path.exists(audio_file):
+    os.remove(audio_file)
+
+print(f"Video with lip sync created successfully: {output_video_file}")
